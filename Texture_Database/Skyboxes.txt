@@ -1,0 +1,105 @@
+2497/1[Single-File]:  Hoax Beta
+2498/1[Single-File]:  Forest
+2499/1[Single-File]:  Seles
+2500/1[Single-File]:  Hellena Prison 1
+2501/1[Single-File]:  Hellena Prison 2
+2502/1[Single-File]:  Hellena Prison 3
+2503/1[Single-File]:  Prairie
+2504/1[Single-File]:  Limestone Cave 1
+2505/1[Single-File]:  Limestone Cave 2
+2506/1[Single-File]:  Hoax
+2507/1[Single-File]:  Marshlands
+2508/1[Single-File]:  Volcano Villude
+2509/1[Single-File]:  Volcano Villude Boss Fight
+2510/1[Single-File]:  Nest Of Dragon Outside
+2511/1[Single-File]:  Nest Of Dragon Feyrbrand Lair
+2512/1[Single-File]:  Shirley Shrine
+2513/1[Single-File]:  Shirley Shrine Boss Fight
+2514/1[Single-File]:  Lohan Battle Arena
+2515/1[Single-File]:  Melbu Frahma 2nd Stage
+2518/1[Single-File]:  Black Castle
+2519/1[Single-File]:  Black Castle Throne
+2520/1[Single-File]:  Barrens
+2521/1[Single-File]:  Moon Infinity Hall
+2522/1[Single-File]:  Melbu Frahma 3rd Generation
+2523/1[Single-File]:  Valley of the Corrupted Gravity
+2524/1[Single-File]:  Valley of the Corrupted Gravity Boss Fight
+2525/1[Single-File]:  Home of Giganto
+2526/1[Single-File]:  Home of Giganto Throne
+2527/1[Single-File]:  Fletz Castle Throne
+2528/1[Single-File]:  Phantom Ship
+2530/1[Single-File]:  Undersea Cavern
+2532/1[Single-File]:  Undersea Cavern Regole Nest
+2533/1[Single-File]:  Evergreen Forest
+2534/1[Single-File]:  Forbidden Land
+2535/1[Single-File]:  Forbidden Land Grand Jewel
+2536/1[Single-File]:  Mountain Mortal Dragon
+2537/1[Single-File]:  Mountain Mortal Dragon Divine Dragon
+2538/1[Single-File]:  Kammuy Fight
+2539/1[Single-File]:  Kashua Glacier
+2541/1[Single-File]:  Flanvel
+2542/1[Single-File]:  Flanvel Fight with Lloyd
+2543/1[Single-File]:  Snowfield
+2544/1[Single-File]:  Fort Magrad
+2546/1[Single-File]:  Vellweb
+2547/1[Single-File]:  Vellweb 2
+2548/1[Single-File]:  Death Frontier
+2549/1[Single-File]:  Melbu Frahma Last Stage
+2550/1[Single-File]:  Zenebatos
+2551/1[Single-File]:  Mayfil
+2552/1[Single-File]:  Aglis
+2553/1[Single-File]:  Divine Tree 1
+2555/1[Single-File]:  Divine Tree 2
+2556/1[Single-File]:  Moon 1
+2557/1[Single-File]:  Claire Battle
+2558/1[Single-File]:  Moon 2 (Wingly City)
+2559/1[Single-File]:  Archangel Battle
+2560/1[Single-File]:  Moon 3 (TV Stage)
+2561/1[Single-File]:  Zieg Battle
+2562/1[Single-File]:  Melbu Stage 1
+2563/1[Single-File]:  Moon Road
+2564/1[Single-File]:  Zenebatos Bosses
+2565/1[Single-File]:  Mayfil Bosses
+2566/1[Single-File]:  Aglis Boss (Last Kraken)
+2567/1[Single-File]:  Hellena Prison (Jiango)
+2568/1[Single-File]:  Red-Eyed Dragon Dimension
+2569/1[Single-File]:  Jade Dragon Dimension
+2570/1[Single-File]:  Blue-Sea Dragon Dimension
+2571/1[Single-File]:  Dark Dragon Dimension
+2572/1[Single-File]:  White-Silver Dragon Dimension
+2573/1[Single-File]:  Golden Dragon Dimension
+2574/1[Single-File]:  Violet Dragon Dimension
+2575/1[Single-File]:  Divine Dragon Dragon Dimension
+2576/1[Single-File]:  Death Rose Battle
+2577/1[Single-File]:  Death Rose Battle 2 (Animated)
+2578/1[Single-File]:  Old Home of Gigantos
+2579/1[Single-File]:  Indora Battle
+2580/1[Single-File]:  Moon Dragon Mountain
+2581/1[Single-File]:  Michael Battle
+2582/1[Single-File]:  Doel Battle
+2583/1[Single-File]:  North Serdio Woods
+2584/1[Single-File]:  South Serdio Woods
+2585/1[Single-File]:  Queens Fury Ship
+2586/1[Single-File]:  Tiberoa Desert
+2587/1[Single-File]:  Hoax Last Stand Cutscene
+2588/1[Single-File]:  Volcano Villude Virage Cutscene
+2589/1[Single-File]:  Nest of Dragon Inside
+2590/1[Single-File]:  Melbu Frahma 2nd Stage
+2591/1[Single-File]:  Melbu Frahma 3rd Generation Cutscene
+2592/1[Single-File]:  Melbu Frahma 3rd Generation Cutscene 2
+5722[Single-File]:   Start Screen-Options
+5723[Single-File]:   Ending Credits 1
+5724[Single-File]:   Ending Credits 2
+5725[Single-File]:   Ending Credits 3
+5726[Single-File]:   Ending Credits 4
+5727[Single-File]:   Ending Credits 5
+5728[Single-File]:   Ending Credits 6
+5729[Single-File]:   Ending Credits 7
+5730[Single-File]:   Ending Credits 8
+5731[Single-File]:   Ending Credits 9
+5732[Single-File]:   Ending Credits 10
+5733[Single-File]:   Ending Credits 11
+5734[Single-File]:   Ending Credits 12
+5735[Single-File]:   Ending Credits 13
+5696[Single-File]:   World Map
+6667[Single-File]:   Game Over

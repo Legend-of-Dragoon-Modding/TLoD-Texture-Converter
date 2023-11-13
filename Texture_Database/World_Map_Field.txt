@@ -1,0 +1,9 @@
+5695[FOLDER]: World Map GUI and Clouds
+5697[FOLDER]: South Serdio
+5698[FOLDER]: North Serdio
+5699[FOLDER]: Tiberoa
+5700[FOLDER]: Illisa Bay
+5701[FOLDER]: Mille Sesau
+5702[FOLDER]: Gloriano
+5703[FOLDER]: Death Frontier Desert
+5704[FOLDER]: World Map Teleportation-Fly

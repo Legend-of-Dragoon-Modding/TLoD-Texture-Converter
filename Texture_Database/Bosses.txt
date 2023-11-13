@@ -1,0 +1,56 @@
+3012[FOLDER]:  Fruegel - Rodriguez - Guftas
+3013[FOLDER]:  Kongol Boss
+3014[FOLDER]:  Kongol Armored Boss
+3015[FOLDER]:  Doel - Dragoon Doel
+3016[FOLDER]:  Lloyd (Lohan)
+3017[FOLDER]:  Armored Lloyd - Dummy Armored Lloyd
+3018[FOLDER]:  Feyrbrand - Greham
+3019[FOLDER]:  Divine Dragon
+3020[FOLDER]:  Shirley - Shana- Albert
+3021[FOLDER]:  Lenus
+3022[FOLDER]:  Regole - Dragoon Lenus
+3023[FOLDER]:  Damia Dragoon
+3024[FOLDER]:  Syuveil
+3025[FOLDER]:  Belzac
+3026[FOLDER]:  Kanzas
+3027[FOLDER]:  Crafty Thief - Mappi
+3028[FOLDER]:  Mappi - Gehrich
+3029[FOLDER]:  Gorgaga
+3030[FOLDER]:  Serfius
+3031[FOLDER]:  Dalton
+3032[FOLDER]:  Atlow
+3033[FOLDER]:  Wounded Virage
+3034[FOLDER]:  Complete Virage
+3035[FOLDER]:  Scarred Super Virage
+3036[FOLDER]:  Super Virage
+3037[FOLDER]:  Drake The Bandit - Wire - Bomb
+3038[FOLDER]:  Jiango
+3039[FOLDER]:  Urobolus
+3040[FOLDER]:  Fire Bird- Fire Balls
+3041[FOLDER]:  Grand Jewel
+3042[FOLDER]:  Ghost Commander - Ghost Knight
+3043[FOLDER]:  Tree- Kamuy
+3045[FOLDER]:  Faust
+3046[FOLDER]:  Faust
+3047[FOLDER]:  Windigo - Snow Cannon
+3048[FOLDER]:  Polter Armor
+3049[FOLDER]:  Melbu Frahma - Tentacles - Armored Lloyd
+3055[FOLDER]:  Vector - Selebus - Kubila
+3056[FOLDER]:  Zackwell - Lavitz Spirit
+3057[FOLDER]:  Last Kraken- Cleone
+3058[FOLDER]:  Caterpillar - Pupa - Imago
+3059[FOLDER]:  Death Rose (Miranda)
+3060[FOLDER]:  Claire - Evil Claire
+3061[FOLDER]:  Indora (Kongol)
+3062[FOLDER]:  Michael (Rose & Dart)
+3063[FOLDER]:  Evil Doel Texture (instead of pos 0 have pos 2)
+3064[FOLDER]:  Archangel (Meru)
+3067[FOLDER]:  Shana God of Destruction- Zieg
+3068[FOLDER]:  Melbu Frahma 1st Gen - Tentacles
+3069[FOLDER]:  Melbu Frahma 2nd Gen
+3070[FOLDER]:  Melbu Frahma 4th Gen - Star Bombs
+3071[FOLDER]:  Melbu Frahma 7th Gen - Monster
+3072[FOLDER]:  Divine Dragon Spirit - Spirit Dragon
+3073[FOLDER]:  Regole Spirit - Spirit Dragon
+3074[FOLDER]:  Feyrbrand Spirit - Spirit Dragon
+3087[FOLDER]:  Virage_pos_0 - Urobolus_pos_2 (weird configuration)

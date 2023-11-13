@@ -1,0 +1,19 @@
+/characters/dart/textures/combat: Dart Normal
+/characters/lavitz/textures/combat: Lavitz Normal
+/characters/shana/textures/combat: Shana Normal
+/characters/rose/textures/combat: Rose Normal
+/characters/haschel/textures/combat: Haschel Normal
+/characters/albert/textures/combat: Albert Normal
+/characters/meru/textures/combat: Meru Normal
+/characters/kongol/textures/combat: Kongol Normal
+/characters/miranda/textures/combat: Miranda Normal
+/characters/dart/textures/dragoon: Dart Dragoon
+/characters/lavitz/textures/dragoon: Lavitz Dragoon
+/characters/shana/textures/dragoon: Shana Dragoon
+/characters/rose/textures/dragoon: Rose Dragoon
+/characters/haschel/textures/dragoon: Haschel Dragoon
+/characters/albert/textures/dragoon: Albert Dragoon
+/characters/meru/textures/dragoon: Meru Dragoon
+/characters/kongol/textures/dragoon: Kongol Dragoon
+/characters/miranda/textures/dragoon: Miranda Dragoon
+/characters/divine/textures/dragoon: Dart Divine Dragoon

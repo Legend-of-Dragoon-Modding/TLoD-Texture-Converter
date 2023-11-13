@@ -1,0 +1,13 @@
+4113[FOLDER]: DEFF-Battle GUI_Extra TIMs
+5718[FOLDER]: Start Screen-Options
+5720[FOLDER]: Ending Credits
+5736[Single-File]: Sony Computer Entertainment Inc Presents
+5737[Single-File]: Sony Computer Entertainment America Presents
+5738[Single-File]: Sony Computer Entertainment Europe Presents
+6665[Single-File]: Menu
+6666[Single-File]: Save Icons
+6669[FOLDER]: Fonts - Chatbox Shape and Icons
+6670[FOLDER]: Serdian War - Chapter 1
+6671[FOLDER]: Platinum Shadow - Chapter 2
+6672[FOLDER]: Fate & Soul - Chapter 3
+6673[FOLDER]: Moon & Fate - Chapter 4
