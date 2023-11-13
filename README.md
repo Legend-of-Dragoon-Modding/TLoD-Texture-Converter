@@ -18,7 +18,7 @@ Total Space required approximately: 150MB.
 Time to convert all the files: 05 Minutes 27 Seconds.
 
 Keep in mind, surely this tool can be executed in lower PC specifications, but the time to
-convert the models will depend on how fast your Hardware is.
+convert the Textures will depend on how fast your Hardware is.
 
 
 A simple converter to PNG (Portable Network Graphics) format oriented to work with TLoD Texture formats. Python coded (recommended Python version 3.12.0 64bit).
