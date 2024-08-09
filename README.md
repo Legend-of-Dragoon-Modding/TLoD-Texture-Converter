@@ -4,7 +4,7 @@
 ---
 The idea behind this tool is to export/preview/preserve Textures as originally shown ingame, so BE AWARE if you see some textures translucent, is not an error, actually are the options which developers used to configure the Texture Data.
 
-## BETA 0.1
+## BETA 0.2
 
 You check the releases and you will find a Windows Version of it (Tested in Windows 10)
 if not, you can compile it yourself (Sorry Linux/MAC Users i'm not so skilled to port into it).
@@ -15,7 +15,7 @@ RAM: 32 GB.
 SSD: NV2 PCIe 4.0 NVMe.
 
 Total Space required approximately: 150MB.
-Time to convert all the files: 05 Minutes 27 Seconds.
+Time to convert all the files: 02 Minutes 07 Seconds.
 
 Keep in mind, surely this tool can be executed in lower PC specifications, but the time to
 convert the Textures will depend on how fast your Hardware is.
@@ -73,7 +73,7 @@ DrewUniverse and Guilty!, they took their precious time to check if this tool is
 
 i want to thanks a lot to this people who came my main inspiration to learn programming!:
 
-TheFlyingZamboni Monoxide Illeprih Zychronix
+TheFlyingZamboni Monoxide Zychronix
 
 Also a special thanks to Monoxide, who did an impressive job reversing TLoD Game Engine!.
 
@@ -91,6 +91,11 @@ You can find me here:
 ### **CHANGELOG**
 
 ```
+BETA 0.1 version
+ADDING SUPPORT FOR THE NEW TEXTURE PLACEMENT
+BIG IMPROVES OVER CONVERSION TIME
+FIXING SOME REDUNDANT AND NONSENSE CODE
+
 BETA 0.1 version
 FIRST RELEASE
 Initial Comment and a little explain about this tool

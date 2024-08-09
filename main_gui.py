@@ -15,7 +15,8 @@ from tktooltip import ToolTip
 from PIL import ImageTk, Image
 import process_database_file as dtl
 import webbrowser
-import rt_preview
+from texture_type_interface import PngTexture
+from preview_textures import TexturePreview
 import convert_advanced
 import io
 
@@ -42,57 +43,56 @@ class Options:
         little_root.wm_withdraw()
         with open(self.option_file, 'r') as read_config: # Reading the Config file to
             read_all_config = read_config.readlines()
-            for r_all_config in read_all_config:
-                if f'FIRST_RUN' in r_all_config:
-                    start_read_fr = r_all_config.find(f'=')
-                    read_fr = r_all_config[start_read_fr + 1:].strip()
-                    if read_fr == f'True':
-                        message_box_first_time = messagebox.showinfo(title='First Time Configuration', message='Now we will do a Startup Configuration...')
-                        first_run = False
-                    else:
-                        first_run = False
+            # First Run Check
+            config_first_run = read_all_config[1]
+            read_fr = config_first_run[12:].strip()
+            if read_fr == f'True':
+                start_config = messagebox.showinfo(title='First Time Configuration', message='Now we will do a Startup Configuration...')
+            else:
+                first_run = False
 
-                elif f'DEFAULT_RES_X' in r_all_config:
-                    start_x = r_all_config.find(f'=')
-                    r_a_config_x = r_all_config[start_x + 1:].strip()
-                    size_x = int(r_a_config_x)
-                
-                elif f'DEFAULT_RES_Y' in r_all_config:
-                    start_y = r_all_config.find(f'=')
-                    r_a_config_y = r_all_config[start_y + 1:].strip()
-                    size_y = int(r_a_config_y)
-                
-                elif f'SC_FOLDER' in r_all_config:
-                    start_read_sc = r_all_config.find(f'=')
-                    read_sc = r_all_config[start_read_sc + 1:].strip()
-                    if read_sc != f'None':
-                        sc_folder_def = read_sc
-                    else:
-                        message_box_sc = messagebox.showinfo(title=f'SELECT SC FOLDER', message='Please select the folder called \"files\" in SC root folder')
-                        root_files_sc = askdirectory(title='Select files folder from SC')
-                        getting_all_folders = os.walk(root_files_sc)
+            # Size X, Y Check
+            config_x_size = read_all_config[2]
+            r_a_config_x = config_x_size[15:].strip()
+            size_x = int(r_a_config_x)
+            
+            config_y_size = read_all_config[3]
+            r_a_config_y = config_y_size[15:].strip()
+            size_y = int(r_a_config_y)
+            
+            # Severed Chains Dump folder Check
+            start_read_sc = read_all_config[4]
+            read_sc = start_read_sc[11:].strip()
+            if read_sc != f'None':
+                sc_folder_def = read_sc
+            else:
+                messagebox.showinfo(title=f'SELECT SC FOLDER', message='Please select the folder called \"files\" in SC root folder')
+                root_files_sc = askdirectory(title='Select files folder from SC')
+                getting_all_folders = os.walk(root_files_sc)
 
-                        if root_files_sc == f'':
-                            messagebox.showerror(title=f'Incorrect SC FOLDER', message='FATAL CRASH!: Folder not selected')
-                            exit()
+                if root_files_sc == f'':
+                    messagebox.showerror(title=f'Incorrect SC FOLDER', message='FATAL CRASH!: Folder not selected')
+                    first_run = True
+                    exit()
 
-                        for root, dirs, files in getting_all_folders:
-                            if f'files' in root:
-                                sc_folder_def = root_files_sc
-                                break
-                            else:
-                                messagebox.showerror(title=f'Incorrect SC FOLDER', message=f'Something went wrong, this is not the SC root folder')
-                                exit()
-                
-                elif f'DUMP_FOLDER' in r_all_config:
-                    start_read_dump = r_all_config.find(f'=')
-                    read_dump = r_all_config[start_read_dump + 1:].strip()
-                    if read_dump == f'None':
-                        messagebox.showinfo(title='SELECT A FOLDER TO DUMP', message='Please, select a folder to dump converted files.\nRecommendation: Do not create inside SC FOLDER')
-                        new_dump_folder = askdirectory(title='SELECT A FOLDER TO DUMP FILES')
-                        dump_folder = new_dump_folder
+                for root, dirs, files in getting_all_folders:
+                    if f'files' in root:
+                        sc_folder_def = root_files_sc
+                        break
                     else:
-                        dump_folder = read_dump
+                        messagebox.showerror(title=f'Incorrect SC FOLDER', message=f'Something went wrong, this is not the SC root folder')
+                        first_run = True
+                        exit()
+                
+            # Conversion Dump Folder Check
+            start_read_dump = read_all_config[5]
+            read_dump = start_read_dump[13:].strip()
+            if read_dump == f'None':
+                messagebox.showinfo(title='SELECT A FOLDER TO DUMP', message='Please, select a folder to dump converted files.\nRecommendation: Do not create inside SC FOLDER')
+                new_dump_folder = askdirectory(title='SELECT A FOLDER TO DUMP FILES')
+                dump_folder = new_dump_folder
+            else:
+                dump_folder = read_dump
         
         self.write_options(self, path_cnf_file=self.option_file, first_run=False, size_x=size_x, size_y=size_y, sc_folder_def=sc_folder_def, dump_folder=dump_folder)
         little_root.destroy()
@@ -129,7 +129,8 @@ class MainWindow(Frame):
         ## Image
         self.image_filename = "Resources/Savan_GUI.png"
         self.texture_database = "Texture_Database/"
-        self.create_list_files = dtl.DatabaseDict.process_database(self=dtl.DatabaseDict, database_path_str=self.texture_database)
+        database_files = dtl.DatabaseDict(database_path=self.texture_database)
+        self.create_dict_files = database_files.database_processed
         self.open_image = Image.open(self.image_filename)
         self.x_y_values = self.resize_window(width_mainframe_change=width_mainframe, height_mainframe_change=height_mainframe)
         self.resize_image = self.open_image.resize(self.x_y_values, Image.Resampling.LANCZOS)
@@ -150,7 +151,7 @@ class MainWindow(Frame):
         ## Configuration Button
         self.config_button = Button(self, text='CONFIG', cursor="hand2", command=self.configure_tool)
         ## Github Hyperlink
-        self.github_page = Label(self, text='https://github.com/Legend-of-Dragoon-Modding/TLoD-TMD-Converter', font=('Calibri', 11), fg='#0000EE', cursor='hand2')
+        self.github_page = Label(self, text='https://github.com/Legend-of-Dragoon-Modding/TLoD-Texture-Converter', font=('Calibri', 11), fg='#0000EE', cursor='hand2')
 
         #### Placing Methods ####
         self.background_canvas.place(relwidth=1, relheight=1, relx=-0.28, rely= -0.25)
@@ -163,7 +164,7 @@ class MainWindow(Frame):
         self.about_button.place(relx=0.05, rely=0.69, relwidth= 0.15, relheight= 0.1)
         self.config_button.place(relx=0.05, rely=0.79, relwidth= 0.15, relheight= 0.1)
         self.github_page.place(relx=0.35, rely=0.93, relwidth= 0.4, relheight= 0.07)
-        self.github_page.bind("<Button-1>", lambda e: self.callback_link('https://github.com/Legend-of-Dragoon-Modding/TLoD-TMD-Converter'))
+        self.github_page.bind("<Button-1>", lambda e: self.callback_link('https://github.com/Legend-of-Dragoon-Modding/TLoD-Texture-Converter'))
 
     #### Main Window Callbacks ####
     def resize_window(self, width_mainframe_change=int, height_mainframe_change=int):
@@ -184,6 +185,11 @@ class MainWindow(Frame):
         Options.read_write_options(Options)
         # Create new Widget for the Select Box
         self.new_window_box = Toplevel(master=self)
+        self.current_texture_path: str = ''
+        self.current_texture_type: str = ''
+        self.current_texture_name: str = ''
+        self.current_texture_flag: str = ''
+        self.parent_blacklist: list = []
         self.new_window_box.grab_set()
         self.new_window_box.focus_set()
         x_main = self.x_y_values[0]
@@ -291,6 +297,18 @@ class MainWindow(Frame):
         self.label_treeview.place(relx=0.01, rely=0.01, relwidth=0.3, relheight= 0.97)
         self.label_preview.place(relx=0.32, rely=0.01, relwidth=0.5, relheight= 0.97)
         self.label_conversion_buttons.place(relx=0.825, rely=0.01, relwidth=0.17, relheight= 0.97)
+        ## Canvas and Image (Background image)
+        self.background_canvas_conversion_buttons = Canvas(master=self.label_conversion_buttons)
+        self.background_canvas_conversion_buttons.place(relx=0.01, rely= 0.01, relwidth=0.99, relheight=0.48)
+        self.background_canvas_conversion_buttons.update()
+        x_label_width = self.background_canvas_conversion_buttons.winfo_width()
+        y_label_height = self.background_canvas_conversion_buttons.winfo_height()
+        xy_tuple = (x_label_width, y_label_height)
+        self.image_filename_2 = "Resources/Savan_GUI_2.png"
+        self.open_image_2 = Image.open(self.image_filename_2)
+        self.resize_image_2 = self.open_image_2.resize(xy_tuple, Image.Resampling.LANCZOS)
+        self.image_background_2 = ImageTk.PhotoImage(image=self.resize_image_2)
+        self.background_canvas_conversion_buttons.create_image(x_label_width - 110, y_label_height - 170, image=self.image_background_2, anchor=CENTER)
         # Placing Treeview
         self.tree_list.place(relx=0.01, rely=0.01, relwidth=0.98, relheight= 0.98)
         # Placing ScrollBar (Treeview)
@@ -327,101 +345,54 @@ class MainWindow(Frame):
         # Placing Convert ALL Textures Button
         self.convert_all_textures.place(relx=0.1, rely=0.9, relwidth=0.8, relheight=0.1)
 
-        ## Canvas and Image (Background image)
-        self.background_canvas_conversion_buttons = Canvas(master=self.label_conversion_buttons)
-        self.background_canvas_conversion_buttons.place(relx=0.01, rely= 0.01, relwidth=0.99, relheight=0.53)
-        self.background_canvas_conversion_buttons.update()
-        x_label_width = self.background_canvas_conversion_buttons.winfo_width()
-        y_label_height = self.background_canvas_conversion_buttons.winfo_height()
-        xy_tuple = (x_label_width, y_label_height)
-        self.image_filename_2 = "Resources/Savan_GUI_2.png"
-        self.open_image_2 = Image.open(self.image_filename_2)
-        self.resize_image_2 = self.open_image_2.resize(xy_tuple, Image.Resampling.LANCZOS)
-        self.image_background_2 = ImageTk.PhotoImage(image=self.resize_image_2)
-        self.background_canvas_conversion_buttons.create_image(x_label_width - 110, y_label_height - 200, image=self.image_background_2, anchor=CENTER)
-
         # Treeview Binds
         self.tree_list.bind('<ButtonRelease-1>', self.selected_treeview)
 
     # Preview/Convert Populate Treeview List
     def populate_treeview(self):
-        sc_path = sc_folder_def
-        for parent_name in self.create_list_files:
-            get_files_from = self.create_list_files.get(f'{parent_name}')
-            self.tree_list.insert(parent='', index='end', iid=f'Parent_{parent_name}', values=(parent_name, 'FOLDER'))
-            texture_format = 'None'
-            if parent_name == 'Battle_Stages':
-                texture_format = 'TIM: 4-Bit CLUT'
-            elif parent_name == 'Bosses':
-                texture_format = 'TIM: 4-Bit CLUT'
-            elif parent_name == 'Characters':
-                texture_format = 'TIM: 4-Bit CLUT'
-            elif parent_name == 'CutScenes':
-                texture_format = 'TIM: 4-Bit CLUT'
-            elif parent_name == 'Enemies':
-                texture_format = 'TIM: 4-Bit CLUT'
-            elif parent_name == 'Menu_Misc':
-                texture_format = 'TIM: Various Configs'
-            elif parent_name == 'Skyboxes':
-                texture_format = 'MCQ'
-            elif parent_name == 'THE_END':
-                texture_format = 'TIM: 4-Bit CLUT'
-            elif parent_name == 'Tutorial':
-                texture_format = 'TIM: 4-Bit CLUT'
-            elif parent_name == 'World_Map_Field':
-                texture_format = 'TIM: 4-Bit CLUT'
-            elif parent_name == 'World_Map_Thumbnails':
-                texture_format = 'TIM: 8-Bit CLUT'
-            add_this_path = ''
-            if parent_name == 'Characters':
-                add_this_path = f'/characters'
-            else:
-                add_this_path = f'/SECT/DRGN0.BIN'
-            more_path = sc_path + add_this_path
+        for parent_name in self.create_dict_files:
+            get_files_from = self.create_dict_files.get(f'{parent_name}')
+            self.tree_list.insert(parent='', index='end', iid=f'Parent_{parent_name}', values=(parent_name, 'Parent'))
+            self.parent_blacklist.append(parent_name)
             number_add = 0
-            for get_this_file in get_files_from:
-                file_or_folder = get_files_from.get(f'{get_this_file}')
-                internal_iid = f'{parent_name}#{get_this_file}${number_add}'
-                self.tree_list.insert(parent=f'Parent_{parent_name}', index='end', iid=internal_iid, values=(get_this_file, f'{texture_format}'))
-                if (parent_name == 'Menu_Misc') and ('6665' in file_or_folder):
-                    for number in range(0, 3):
-                        internal_iid_new = f'{internal_iid}_embedded_{number}'
-                        self.tree_list.insert(parent=f'{internal_iid}', index='end', iid=internal_iid_new, values=(number, f'TIM: 4-Bit CLUT'))
-                self.sub_files_path(sc_path=more_path, texture_path=file_or_folder, n_internal_iid=internal_iid, t_format=texture_format)
+            for this_files in get_files_from:
+                this_files_data = get_files_from.get(f'{this_files}')
+                in_disk_type = this_files_data.get('inDiskType')
+                if in_disk_type == 'Single-File':
+                    get_file_type = this_files_data.get('formatType')
+                    get_file_path = this_files_data.get(f'filePath')
+                    get_fantasy_name = this_files_data.get(f'fantasyName')
+                    fantasy_name_change_underscore = get_fantasy_name.replace(' ', '_')
+                    get_flag = this_files_data.get(f'flag')
+                    internal_iid = f'{parent_name}#{this_files}${number_add}'
+                    this_dump_file_path = f'{dump_folder}\\{parent_name}\\{fantasy_name_change_underscore}'
+                    this_file_create = f'{fantasy_name_change_underscore}'
+                    self.tree_list.insert(parent=f'Parent_{parent_name}', index='end', 
+                                          iid=internal_iid, values=(this_files, get_file_type, get_file_path[0], 
+                                                                    get_fantasy_name, get_flag, this_dump_file_path, this_file_create))
+                elif in_disk_type == 'FOLDER':
+                    get_nested_files = this_files_data.get('filePath')
+                    number_add_nested = 0
+                    get_file_type = this_files_data.get('formatType')
+                    internal_iid = f'SubPar_{parent_name}#{this_files}#{number_add}'
+                    self.tree_list.insert(parent=f'Parent_{parent_name}', index='end', iid=internal_iid, values=(this_files, 'FOLDER'))
+                    self.parent_blacklist.append(this_files)
+                    get_file_path = this_files_data.get(f'filePath')
+                    get_fantasy_name = this_files_data.get(f'fantasyName')
+                    get_flag = this_files_data.get(f'flag')
+                    for texture_parent_folder in get_nested_files:
+                        last_name_position = texture_parent_folder.rfind('\\')
+                        new_fantasy_name = f'{parent_name}_{number_add_nested}'.replace(' ', '_')
+                        file_name = texture_parent_folder[last_name_position + 1:]
+                        this_files_change_underscore = this_files.replace(' ', '_')
+                        this_dump_file_path = f'{dump_folder}\\{parent_name}\\{this_files_change_underscore}\\{number_add_nested}'
+                        this_file_create = f'{number_add_nested}'
+                        internal_iid_nested = f'{parent_name}#{texture_parent_folder}${number_add_nested}'
+                        self.tree_list.insert(parent=f'SubPar_{parent_name}#{this_files}#{number_add}', index='end', 
+                                              iid=internal_iid_nested, values=(new_fantasy_name, get_file_type, texture_parent_folder, 
+                                                                               file_name, get_flag, this_dump_file_path, this_file_create))
+                        number_add_nested += 1
                 number_add += 1
-
-    # This gone to check the files under the parent and Create the Treeview-Child
-    def sub_files_path(self, sc_path, texture_path, n_internal_iid, t_format):
-        if len(texture_path) == 1:
-            unpack_list = texture_path[0]
-            new_subinternal_iid = 0
-            for each_texture_object in unpack_list:
-                new_sub_iid = f'{n_internal_iid}{new_subinternal_iid}'
-                name_texture_object = each_texture_object[1]
-                self.tree_list.insert(parent=f'{n_internal_iid}', index='end', iid=new_sub_iid, values=(name_texture_object, f'{t_format}'))
-                new_subinternal_iid += 1
-        else:
-            if f'[FOLDER]' in texture_path:
-                look_in_path = texture_path.find(f'[FOLDER]')
-                clean_path = texture_path[:look_in_path]
-                path_nested = sc_path + f'/' + clean_path # This lead to Super-Nested Files
-                self.check_files(f_path=path_nested, n_int_iid=n_internal_iid, tformat=t_format)
-    
-    # This method is ONLY USED to check for files inside Super-Nested Files and Create the Treeview-Child
-    def check_files(self, f_path=str, n_int_iid=str, tformat=str):
-        full_list = os.walk(f_path)
-        for root, dirs, files in full_list:
-            get_mrg_index = files.index(f'mrg')
-            del files[get_mrg_index]
-            numbers = [int(f) for f in files]
-            numbers.sort()
-            files = [str(n) for n in numbers]
-            for afile in files:
-                full_path_nested = root + f'/' + afile
-                this_file_size = os.path.getsize(full_path_nested)
-                if (this_file_size != 0):
-                    new_iid_afile = f'{n_int_iid}{afile}'
-                    self.tree_list.insert(parent=f'{n_int_iid}', index='end', iid=new_iid_afile, values=(afile, f'{tformat}', 'NESTED'))
 
     # Treeview Callbacks - For "In Real Time" Previewing
     """Each 'Final Path' represent the path to the file selected in the Treeview"""
@@ -433,189 +404,36 @@ class MainWindow(Frame):
         self.current_canvas_height = self.preview_canvas.winfo_height()
         current_selection = self.tree_list.focus()
         current_item_value = self.tree_list.item(current_selection)
-        parent_item_value = self.tree_list.parent(current_selection)
-        current_texture_name = current_item_value.get('values')
-        have_child = self.tree_list.get_children(current_selection)
-        global final_path
-        global current_texture_type
-        final_path = ''
-        current_texture_type = ''
-        if (parent_item_value != f'') and (have_child == ()):
-            if (f'$' in parent_item_value) and (f'CutScenes' not in parent_item_value): # Excluding the CutScenes since are pretty complex to get them directly
-                self.spinbox_clut.configure(state='disabled')
-                get_numeral_index = parent_item_value.find(f'#')
-                get_cash_index = parent_item_value.find(f'$')
-                name_root = parent_item_value[0:get_numeral_index]
-                name_texture_folder = parent_item_value[(get_numeral_index + 1):get_cash_index]
-                get_under_root = self.create_list_files.get(f'{name_root}')
-                get_folder = get_under_root.get(f'{name_texture_folder}')
-                clean_folder_name = get_folder.find(f'[')
-                final_folder = get_folder[:clean_folder_name]
-                file_itself = current_texture_name[0]
-                current_texture_type = current_texture_name[1]
-                file_path_nested = sc_folder_def + f'/SECT/DRGN0.BIN/' + f'{final_folder}' + f'/{file_itself}'
-                if '6665' not in file_path_nested:
-                    final_path = file_path_nested
-                    self.tim_texture_for_preview = rt_preview.PreviewTexture.texture_file_decoded(rt_preview.PreviewTexture, file_path_nested, text_type=current_texture_type, sp_flag=0, texture_number=None)
-                    self.number_of_cluts = len(self.tim_texture_for_preview)
-                    self.spinbox_clut.configure(to=(self.number_of_cluts) - 1, state='normal', cursor='xterm')
-                    self.current_clut_int = 0
-                    self.total_cluts_label.configure(state='normal', text=f'Current CLUT: {self.current_clut_int + 1} / {self.number_of_cluts}')
-                    self.label_preview.image = ImageTk.PhotoImage(data=self.tim_texture_for_preview[self.current_clut_int], format='png')
-                    self.label_preview.focus_set()
-                    self.preview_canvas.create_image(((self.current_canvas_width // 2), (self.current_canvas_height // 2)), image=self.label_preview.image, anchor=CENTER)
-                    self.convert_current_texture.configure(state='normal')
-                    self.label_preview.bind('<MouseWheel>', self.mousewheel_spinbox)
-                    self.spinbox_clut.bind('<MouseWheel>', self.mousewheel_spinbox)
-                    self.label_preview.bind('<F8>', self.up_arrow_spinbox)
-                    self.label_preview.bind('<F7>', self.down_arrow_spinbox)
-                    self.preview_canvas.bind('<MouseWheel>', self.mousewheel_spinbox)
-                    self.spinbox_clut.bind('<Return>', self.change_spinbox_val)
-                    self.spinbox_clut.configure(validate='all', validatecommand=(self.register(self.validate_int), "%P"))
-                else:
-                    get_len = len(file_path_nested)
-                    final_path = file_path_nested[:(get_len - 2)]
-                    number_file = int(file_path_nested[(get_len - 1):])
-                    self.tim_texture_for_preview = rt_preview.PreviewTexture.texture_file_decoded(rt_preview.PreviewTexture, final_path, text_type=current_texture_type, sp_flag=2, texture_number=number_file)
-                    self.number_of_cluts = len(self.tim_texture_for_preview)
-                    self.spinbox_clut.configure(to=(self.number_of_cluts) - 1, state='normal', cursor='xterm')
-                    self.current_clut_int = 0
-                    self.total_cluts_label.configure(state='normal', text=f'Current CLUT: {self.current_clut_int + 1} / {self.number_of_cluts}')
-                    self.label_preview.image = ImageTk.PhotoImage(data=self.tim_texture_for_preview[self.current_clut_int], format='png')
-                    self.label_preview.focus_set()
-                    self.preview_canvas.create_image(((self.current_canvas_width // 2), (self.current_canvas_height // 2)), image=self.label_preview.image, anchor=CENTER)
-                    self.convert_current_texture.configure(state='normal')
-                    self.label_preview.bind('<MouseWheel>', self.mousewheel_spinbox)
-                    self.spinbox_clut.bind('<MouseWheel>', self.mousewheel_spinbox)
-                    self.label_preview.bind('<F8>', self.up_arrow_spinbox)
-                    self.label_preview.bind('<F7>', self.down_arrow_spinbox)
-                    self.preview_canvas.bind('<MouseWheel>', self.mousewheel_spinbox)
-                    self.spinbox_clut.bind('<Return>', self.change_spinbox_val)
-                    self.spinbox_clut.configure(validate='all', validatecommand=(self.register(self.validate_int), "%P"))
-
-            elif (f'$' in parent_item_value) and (f'CutScenes' in parent_item_value):
-                self.spinbox_clut.configure(state='disabled')
-                get_numeral_index = parent_item_value.find(f'#')
-                get_cash_index = parent_item_value.find(f'$')
-                name_root = parent_item_value[0:get_numeral_index]
-                name_texture_folder = parent_item_value[(get_numeral_index + 1):get_cash_index]
-                get_under_root = self.create_list_files.get(f'{name_root}')
-                get_folder = get_under_root.get(f'{name_texture_folder}')
-                name_object_file = current_texture_name[0]
-                current_texture_type = current_texture_name[1]
-                denest_getfolder = get_folder[0]
-                for name in denest_getfolder:
-                    if name_object_file in name:
-                        this_file = name[0]
-                        final_path_cu = sc_folder_def + f'/SECT/DRGN0.BIN/' + f'{this_file}'
-                        final_path = final_path_cu
-                        self.tim_texture_for_preview = rt_preview.PreviewTexture.texture_file_decoded(rt_preview.PreviewTexture, final_path_cu, text_type=current_texture_type, sp_flag=0, texture_number=None)
-                        self.number_of_cluts = len(self.tim_texture_for_preview)
-                        self.spinbox_clut.configure(to=(self.number_of_cluts) - 1, state='normal', cursor='xterm')
-                        self.current_clut_int = 0
-                        self.total_cluts_label.configure(state='normal', text=f'Current CLUT: {self.current_clut_int + 1} / {self.number_of_cluts}')
-                        self.label_preview.image = ImageTk.PhotoImage(data=self.tim_texture_for_preview[self.current_clut_int], format='png')
-                        self.label_preview.focus_set()
-                        self.preview_canvas.create_image(((self.current_canvas_width // 2), (self.current_canvas_height // 2)), image=self.label_preview.image, anchor=CENTER)
-                        self.convert_current_texture.configure(state='normal')
-                        self.label_preview.bind('<MouseWheel>', self.mousewheel_spinbox)
-                        self.spinbox_clut.bind('<MouseWheel>', self.mousewheel_spinbox)
-                        self.label_preview.bind('<F8>', self.up_arrow_spinbox)
-                        self.label_preview.bind('<F7>', self.down_arrow_spinbox)
-                        self.preview_canvas.bind('<MouseWheel>', self.mousewheel_spinbox)
-                        self.spinbox_clut.bind('<Return>', self.change_spinbox_val)
-                        self.spinbox_clut.configure(validate='all', validatecommand=(self.register(self.validate_int), "%P"))
-            
-            else:
-                find_first_underscore = parent_item_value.find(f'_')
-                name_parent = parent_item_value[(find_first_underscore + 1):]
-                get_file_name = current_texture_name[0]
-                current_texture_type = current_texture_name[1]
-                get_under_parent = self.create_list_files.get(f'{name_parent}')
-                get_file_path_init = get_under_parent.get(f'{get_file_name}')
-                
-                if (f'Single-File' in get_file_path_init) and (current_texture_type == 'MCQ'): # MCQ inside Battle Stages Folders
-                    self.spinbox_clut.configure(state='disabled', cursor='arrow')
-                    self.total_cluts_label.configure(state='disabled', text=f'MCQ CLUT Data not Available')
-                    get_first_bracket = get_file_path_init.find(f'[')
-                    file_name = get_file_path_init[0:get_first_bracket]
-                    final_path_sf = sc_folder_def + f'/SECT/DRGN0.BIN/' + f'{file_name}'
-                    final_path = final_path_sf
-                    self.tim_texture_for_preview = rt_preview.PreviewTexture.texture_file_decoded(rt_preview.PreviewTexture, final_path_sf, text_type=current_texture_type, sp_flag=0, texture_number=None)
-                    self.label_preview.image = ImageTk.PhotoImage(data=self.tim_texture_for_preview, format='png')
-                    self.label_preview.focus_set()
-                    self.preview_canvas.create_image(((self.current_canvas_width // 2), (self.current_canvas_height // 2)), image=self.label_preview.image, anchor=CENTER)
-                    self.convert_current_texture.configure(state='normal')
-                    self.label_preview.unbind('<MouseWheel>')
-                    self.label_preview.bind('<F8>')
-                    self.label_preview.bind('<F7>')
-                    self.spinbox_clut.unbind('<MouseWheel>')
-                    self.preview_canvas.unbind('<MouseWheel>')
-                    self.spinbox_clut.unbind('<ButtonRelease-1>')
-                    self.spinbox_clut.unbind('<Return>')
-                
-                elif (f'Single-File' in get_file_path_init) and (current_texture_type != 'MCQ'): # Texture Root Files
-                    get_first_bracket = get_file_path_init.find(f'[')
-                    file_name = get_file_path_init[0:get_first_bracket]
-                    final_path_sf = sc_folder_def + f'/SECT/DRGN0.BIN/' + f'{file_name}'
-                    final_path = final_path_sf
-                    if '6666' in file_name:
-                        self.tim_texture_for_preview = rt_preview.PreviewTexture.texture_file_decoded(rt_preview.PreviewTexture, final_path_sf, text_type=current_texture_type, sp_flag=1, texture_number=None)
-                    else:
-                        self.tim_texture_for_preview = rt_preview.PreviewTexture.texture_file_decoded(rt_preview.PreviewTexture, final_path_sf, text_type=current_texture_type, sp_flag=0, texture_number=None)
-                    self.number_of_cluts = len(self.tim_texture_for_preview)
-                    self.spinbox_clut.configure(to=(self.number_of_cluts) - 1, state='normal', cursor='xterm')
-                    self.current_clut_int = 0
-                    self.total_cluts_label.configure(state='normal', text=f'Current CLUT: {self.current_clut_int + 1} / {self.number_of_cluts}')
-                    self.label_preview.image = ImageTk.PhotoImage(data=self.tim_texture_for_preview[self.current_clut_int], format='png')
-                    self.label_preview.focus_set()
-                    self.preview_canvas.create_image(((self.current_canvas_width // 2), (self.current_canvas_height // 2)), image=self.label_preview.image, anchor=CENTER)
-                    self.convert_current_texture.configure(state='normal')
-                    self.label_preview.bind('<MouseWheel>', self.mousewheel_spinbox)
-                    self.spinbox_clut.bind('<MouseWheel>', self.mousewheel_spinbox)
-                    self.label_preview.bind('<F8>', self.up_arrow_spinbox)
-                    self.label_preview.bind('<F7>', self.down_arrow_spinbox)
-                    self.preview_canvas.bind('<MouseWheel>', self.mousewheel_spinbox)
-                    self.spinbox_clut.bind('<Return>', self.change_spinbox_val)
-                    self.spinbox_clut.configure(validate='all', validatecommand=(self.register(self.validate_int), "%P"))
-                    
-                elif 'characters' in get_file_path_init: # Texture Character Files
-                    final_path_characters = sc_folder_def + get_file_path_init
-                    final_path = final_path_characters
-                    self.tim_texture_for_preview = rt_preview.PreviewTexture.texture_file_decoded(rt_preview.PreviewTexture, final_path_characters, text_type=current_texture_type, sp_flag=0, texture_number=None)
-                    self.number_of_cluts = len(self.tim_texture_for_preview)
-                    self.spinbox_clut.configure(to=(self.number_of_cluts) - 1, state='normal', cursor='xterm')
-                    self.current_clut_int = 0
-                    self.total_cluts_label.configure(state='normal', text=f'Current CLUT: {self.current_clut_int + 1} / {self.number_of_cluts}')
-                    self.label_preview.image = ImageTk.PhotoImage(data=self.tim_texture_for_preview[self.current_clut_int], format='png')
-                    self.label_preview.focus_set()
-                    self.preview_canvas.create_image(((self.current_canvas_width // 2), (self.current_canvas_height // 2)), image=self.label_preview.image, anchor=CENTER)
-                    self.convert_current_texture.configure(state='normal')
-                    self.spinbox_clut.configure(validate='all', validatecommand=(self.register(self.validate_int), "%P"))
-                    self.label_preview.bind('<MouseWheel>', self.mousewheel_spinbox)
-                    self.spinbox_clut.bind('<MouseWheel>', self.mousewheel_spinbox)
-                    self.label_preview.bind('<F8>', self.up_arrow_spinbox)
-                    self.label_preview.bind('<F7>', self.down_arrow_spinbox)
-                    self.preview_canvas.bind('<MouseWheel>', self.mousewheel_spinbox)
-                    self.spinbox_clut.bind('<Return>', self.change_spinbox_val)
-                    
-                else: # Only MCQ
-                    self.spinbox_clut.configure(state='disabled', cursor='arrow')
-                    self.total_cluts_label.configure(state='disabled', text=f'MCQ CLUT Data not Available')
-                    final_path_standard = sc_folder_def + f'/SECT/DRGN0.BIN/' + get_file_path_init
-                    final_path = final_path_standard
-                    self.tim_texture_for_preview = rt_preview.PreviewTexture.texture_file_decoded(rt_preview.PreviewTexture, final_path_standard, text_type=current_texture_type, sp_flag=0, texture_number=None)
-                    self.label_preview.image = ImageTk.PhotoImage(data=self.tim_texture_for_preview, format='png') # This is maintaining the image in the scope of Tkinter, instead of garbage colleting it
-                    self.label_preview.focus_set()
-                    self.preview_canvas.create_image(((self.current_canvas_width // 2), (self.current_canvas_height // 2)), image=self.label_preview.image, anchor=CENTER)
-                    self.convert_current_texture.configure(state='normal')
-                    self.label_preview.unbind('<MouseWheel>')
-                    self.label_preview.unbind('<F8>')
-                    self.label_preview.unbind('<F7>')
-                    self.spinbox_clut.unbind('<MouseWheel>')
-                    self.preview_canvas.unbind('<MouseWheel>')
-                    self.spinbox_clut.unbind('<ButtonRelease-1>')
-                    self.spinbox_clut.unbind('<Return>')
+        current_texture_properties = current_item_value.get('values')
+        current_texture_name = current_texture_properties[0]
+        if current_texture_name not in self.parent_blacklist:
+            self.spinbox_clut.configure(state='disabled')
+            self.current_texture_type = current_texture_properties[1]
+            self.current_texture_path = f'{sc_folder_def}\\{current_texture_properties[2]}'
+            self.current_texture_name: str = current_texture_properties[3]
+            self.current_texture_flag: str = current_texture_properties[4]
+            self.current_texture_dump_folder: str = current_texture_properties[5]
+            self.current_file_create: str = current_texture_properties[6]
+            texture_for_preview = PngTexture(texture_path=self.current_texture_path, texture_type=self.current_texture_type, flag=self.current_texture_flag)
+            self.texture_converted: dict = texture_for_preview.png_texture.get('RGBA_Data')
+            self.texture_size = texture_for_preview.png_texture.get('SizeImg')
+            self.number_of_cluts = len(self.texture_converted)
+            prepare_texture_preview = TexturePreview(texture_png=texture_for_preview.png_texture)
+            self.texture_preview = prepare_texture_preview.texture_for_preview
+            self.spinbox_clut.configure(to=(self.number_of_cluts) - 1, state='normal', cursor='xterm')
+            self.current_clut_int = 0
+            self.total_cluts_label.configure(state='normal', text=f'Current CLUT: {self.current_clut_int + 1} / {self.number_of_cluts}')
+            self.label_preview.image = ImageTk.PhotoImage(data=self.texture_preview.get(f'IMAGE_{self.current_clut_int}'), format='png')
+            self.label_preview.focus_set()
+            self.preview_canvas.create_image(((self.current_canvas_width // 2), (self.current_canvas_height // 2)), image=self.label_preview.image, anchor=CENTER)
+            self.convert_current_texture.configure(state='normal')
+            self.label_preview.bind('<MouseWheel>', self.mousewheel_spinbox)
+            self.spinbox_clut.bind('<MouseWheel>', self.mousewheel_spinbox)
+            self.label_preview.bind('<F8>', self.up_arrow_spinbox)
+            self.label_preview.bind('<F7>', self.down_arrow_spinbox)
+            self.preview_canvas.bind('<MouseWheel>', self.mousewheel_spinbox)
+            self.spinbox_clut.bind('<Return>', self.change_spinbox_val)
+            self.spinbox_clut.configure(validate='all', validatecommand=(self.register(self.validate_int), "%P"))
 
     # Spinbox Validation
     def validate_int(self, P):
@@ -631,8 +449,9 @@ class MainWindow(Frame):
         elif new_int < 0:
             return False
         return True
+    
     # Spinbox Callback
-    def change_spinbox_val(self, enter):
+    def change_spinbox_val(self):
         old_var = self.current_val_spinbox.get()
         new_var = int(old_var)
         if (new_var > (self.number_of_cluts - 1)):
@@ -646,7 +465,7 @@ class MainWindow(Frame):
             self.current_val_spinbox.set('0')
         self.current_clut_int = int(self.current_clut_str)
         self.total_cluts_label.configure(state='normal', text=f'Current CLUT: {int(self.current_clut_str) + 1} / {self.number_of_cluts}')
-        self.label_preview.image = ImageTk.PhotoImage(data=self.tim_texture_for_preview[self.current_clut_int], format='png')
+        self.label_preview.image = ImageTk.PhotoImage(data=self.texture_preview.get(f'IMAGE_{self.current_clut_int}'), format='png')
         self.preview_canvas.create_image(((self.current_canvas_width // 2), (self.current_canvas_height // 2)), image=self.label_preview.image, anchor=CENTER)
     
     def mousewheel_spinbox(self, mouse_action):
@@ -665,7 +484,7 @@ class MainWindow(Frame):
             self.current_val_spinbox.set('0')
         self.current_clut_int = int(self.current_clut_str)
         self.total_cluts_label.configure(state='normal', text=f'Current CLUT: {int(self.current_clut_str) + 1} / {self.number_of_cluts}')
-        self.label_preview.image = ImageTk.PhotoImage(data=self.tim_texture_for_preview[self.current_clut_int], format='png')
+        self.label_preview.image = ImageTk.PhotoImage(data=self.texture_preview.get(f'IMAGE_{self.current_clut_int}'), format='png')
         self.preview_canvas.create_image(((self.current_canvas_width // 2), (self.current_canvas_height // 2)), image=self.label_preview.image, anchor=CENTER)
 
     def up_arrow_spinbox(self, keyboard):
@@ -680,7 +499,7 @@ class MainWindow(Frame):
             self.current_val_spinbox.set('0')
         self.current_clut_int = int(self.current_clut_str)
         self.total_cluts_label.configure(state='normal', text=f'Current CLUT: {int(self.current_clut_str) + 1} / {self.number_of_cluts}')
-        self.label_preview.image = ImageTk.PhotoImage(data=self.tim_texture_for_preview[self.current_clut_int], format='png')
+        self.label_preview.image = ImageTk.PhotoImage(data=self.texture_preview.get(f'IMAGE_{self.current_clut_int}'), format='png')
         self.preview_canvas.create_image(((self.current_canvas_width // 2), (self.current_canvas_height // 2)), image=self.label_preview.image, anchor=CENTER)
 
     def down_arrow_spinbox(self, keyboard):
@@ -695,76 +514,33 @@ class MainWindow(Frame):
             self.current_val_spinbox.set(f'{self.number_of_cluts - 1}')
         self.current_clut_int = int(self.current_clut_str)
         self.total_cluts_label.configure(state='normal', text=f'Current CLUT: {int(self.current_clut_str) + 1} / {self.number_of_cluts}')
-        self.label_preview.image = ImageTk.PhotoImage(data=self.tim_texture_for_preview[self.current_clut_int], format='png')
+        self.label_preview.image = ImageTk.PhotoImage(data=self.texture_preview.get(f'IMAGE_{self.current_clut_int}'), format='png')
         self.preview_canvas.create_image(((self.current_canvas_width // 2), (self.current_canvas_height // 2)), image=self.label_preview.image, anchor=CENTER)
 
     # Convert Current Texture
     def current_texture_convert(self):
-        if (final_path != '') and (current_texture_type != ''):
+        if len(self.texture_converted) != 0:
             current_selection = self.tree_list.focus()
             current_item_value = self.tree_list.item(current_selection)
-            parent_item_value = self.tree_list.parent(current_selection)
             current_texture_name = current_item_value.get('values')
-            have_child = self.tree_list.get_children(current_selection)
-            find_parent = parent_item_value.find("_")
-            file_name_or_parent = current_texture_name[0]
-            file_type = current_texture_type[0:3]
-            parent = parent_item_value[(find_parent + 1):]
-            if (have_child == ()) and ('$' not in parent):
-                new_file_string = file_name_or_parent.replace(" ", "_")
-                folder_parent_name = dump_folder + f'/' + parent + f'/' + new_file_string # This is good
-                complete_file_path = folder_parent_name +  f'/' + new_file_string + f'_{file_type}' + f'.png'
-                self.file_location_label.configure(text=f'{complete_file_path}')
+            if current_texture_name not in self.parent_blacklist:
+                self.file_location_label.configure(text=f'{self.current_texture_dump_folder}\\{self.current_file_create}.png')
                 try:
-                    os.makedirs(folder_parent_name, exist_ok=True)
+                    os.makedirs(self.current_texture_dump_folder, exist_ok=True)
                 except OSError:
                     error_folder_tim_00 = f'Can\'t create TIM Export folder, permission denied'
                     error_folder_window = messagebox.showerror(title='System Error...', message=error_folder_tim_00)
                     print(error_folder_tim_00)
                     exit()
-                if file_type == 'TIM':
-                    total_cluts = len(self.tim_texture_for_preview)
+                if 'TIM' in self.current_texture_type:
+                    total_cluts = len(self.texture_converted)
                     for current_clut in range(0, total_cluts):
-                        complete_file_path = folder_parent_name + f'/' + new_file_string + f'_{file_type}_' + f'_{current_clut}' + f'.png'
-                        img = Image.open(io.BytesIO(self.tim_texture_for_preview[current_clut]))
+                        complete_file_path = f'{self.current_texture_dump_folder}\\{self.current_file_create}_{current_clut}.png'
+                        img = Image.open(io.BytesIO(self.texture_preview.get(f'IMAGE_{current_clut}')))
                         img.save(complete_file_path)
-                elif file_type == 'MCQ':
-                    complete_file_path = folder_parent_name + f'/' + new_file_string + f'_{file_type}' + f'.png'
-                    img = Image.open(io.BytesIO(self.tim_texture_for_preview))
-                    img.save(complete_file_path)
-
-            elif (have_child == ()) and ('$' in parent):
-                file_name_str = str(file_name_or_parent)
-                new_parent_string = parent_item_value.replace("/", "-").replace(" - ", "-").replace(" ", "")
-                new_file_string = file_name_str.replace(" ", "_")
-                
-                find_parent_folder = new_parent_string.find("#")
-                parent_folder = new_parent_string[0:find_parent_folder]
-
-                find_sub_parent_folder = new_parent_string.find("$")
-                sub_parent_folder = new_parent_string[(find_parent_folder + 1) : find_sub_parent_folder]
-
-                #print(parent_folder, " |||| " , sub_parent_folder, " |||| " , file_name_or_parent) #---> DEBUG PRINT
-
-                folder_parent_name = dump_folder + f'/' + parent_folder + f'/' + sub_parent_folder + f'/' + new_file_string # This is good
-                complete_file_path = folder_parent_name +  f'/' + new_file_string + f'_{file_type}' + f'.png'
-                self.file_location_label.configure(text=f'{complete_file_path}')
-                try:
-                    os.makedirs(folder_parent_name, exist_ok=True)
-                except OSError:
-                    error_folder_tim_00 = f'Can\'t create TIM Export folder, permission denied'
-                    error_folder_window = messagebox.showerror(title='System Error...', message=error_folder_tim_00)
-                    print(error_folder_tim_00)
-                    exit()
-                if file_type == 'TIM':
-                    total_cluts = len(self.tim_texture_for_preview)
-                    for current_clut in range(0, total_cluts):
-                        complete_file_path = folder_parent_name + f'/' + new_file_string + f'_{file_type}' + f'_{current_clut}' + f'.png'
-                        img = Image.open(io.BytesIO(self.tim_texture_for_preview[current_clut]))
-                        img.save(complete_file_path)
-                elif file_type == 'MCQ':
-                    complete_file_path = folder_parent_name + f'/' + new_file_string + f'_{file_type}' + f'.png'
-                    img = Image.open(io.BytesIO(self.tim_texture_for_preview))
+                elif 'MCQ' in self.current_texture_type:
+                    complete_file_path = f'{self.current_texture_dump_folder}\\{self.current_file_create}.png'
+                    img = Image.open(io.BytesIO(self.texture_preview.get(f'IMAGE_0')))
                     img.save(complete_file_path)
         else:
             messagebox.showerror(title='Critical!!', message='No Texture file selected to convert')
@@ -879,7 +655,9 @@ class MainWindow(Frame):
         if get_characters == 1:
             selection_list.append("Characters")
         if get_cutscenes == 1:
-            selection_list.append("CutScenes")
+            for this_cutscenes in self.create_dict_files:
+                if 'CutScene' in this_cutscenes:
+                    selection_list.append(this_cutscenes)
         if get_enemies == 1:
             selection_list.append("Enemies")
         if get_menu_misc == 1:
@@ -899,301 +677,69 @@ class MainWindow(Frame):
 
         files_to_convert = []
         for selection in selection_list: # First Generate the list of files and folders to place the files
-            get_this_parent = self.create_list_files.get(f'{selection}')
-            add_this_path = f''
-            if selection != 'Characters':
-                add_this_path = f'/SECT/DRGN0.BIN'
-            
-            for files_from_parent in get_this_parent:
-                self.conversion_window_box.update()
-                get_file = get_this_parent.get(f'{files_from_parent}')
-                file_path = f''
-                if "Battle_Stages" in selection:
-                    look_for_end = get_file.find("[")
-                    get_file = get_file[:look_for_end]
-                    file_to_convert_path = sc_folder_def + add_this_path + f'/{get_file}'
-                    file_name_and_path = dump_folder + f'/{selection}' + f'/{files_from_parent.replace(" ", "_")}'
-                    self.create_folder_batch(this_folder=file_name_and_path)
-                    get_file_changed = get_file.replace("/", "-")
-                    path_to_export = file_name_and_path + f'/{get_file_changed}_{files_from_parent.replace(" ", "_")}'
-                    file_reference = {'parent': 'Battle_Stages', 'path': file_to_convert_path, 'path_export': path_to_export}
-                    files_to_convert.append(file_reference)
+            get_this_parent = self.create_dict_files.get(f'{selection}')
+            for this_files in get_this_parent:
+                this_files_data = get_this_parent.get(f'{this_files}')
+                in_disk_type = this_files_data.get('inDiskType')
                 
-                elif "Bosses" in selection:
-                    look_for_end = get_file.find("[")
-                    get_file = get_file[:look_for_end]
-                    file_to_convert_path = sc_folder_def + add_this_path + f'/{get_file}'
-                    file_name_and_path = dump_folder + f'/{selection}' + f'/{files_from_parent.replace(" ", "_")}'
-                    nested_files = self.check_inside_folder(files_path=file_to_convert_path)
-                    for nested_file in nested_files:
-                        self.create_folder_batch(this_folder=file_name_and_path)
-                        look_name = file_name_and_path.rfind("/")
-                        fancy_name = file_name_and_path[look_name + 1:]
-                        find_file_name = nested_file.rfind("/")
-                        find_entire_name = nested_file[:find_file_name].rfind("/")
-                        entire_file_name = nested_file[find_entire_name + 1:].replace("/", "-")
-                        file_name_complete = f'{file_name_and_path}/{entire_file_name}_{fancy_name}'
-                        file_reference = {'parent': 'Bosses', 'path': nested_file, 'path_export': file_name_complete}
-                        files_to_convert.append(file_reference)
-                
-                elif "Characters" in selection:
-                    file_to_convert_path = sc_folder_def + get_file
-                    file_name_and_path = dump_folder + f'/{selection}' + f'/{files_from_parent.replace(" ", "_")}'
-                    self.create_folder_batch(this_folder=file_name_and_path)
-                    file_reference = {'parent': 'Characters', 'path': file_to_convert_path, 'path_export': file_name_and_path}
-                    files_to_convert.append(file_reference)
-                
-                elif "CutScenes" in selection:
-                    for this_cutscene in get_file:
-                        for this_object in this_cutscene:
-                            file_path = this_object[0]
-                            file_name = this_object[1]
-                            file_to_convert_path = sc_folder_def + add_this_path + f'/{file_path}'
-                            file_name_and_path = dump_folder + f'/{selection}' + f'/{files_from_parent.replace(" ", "_")}' + f'/{file_path}_{file_name.replace(" ", "_").replace("/", "_")}'
-                            self.create_folder_batch(this_folder=file_name_and_path)
-                            file_reference = {'parent': 'CutScenes', 'path': file_to_convert_path, 'path_export': file_name_and_path}
-                            files_to_convert.append(file_reference)
-                
-                elif "Enemies" in selection:
-                    look_for_end = get_file.find("[")
-                    get_file = get_file[:look_for_end]
-                    file_to_convert_path = sc_folder_def + add_this_path + f'/{get_file}'
-                    file_name_and_path = dump_folder + f'/{selection}' + f'/{files_from_parent.replace(" ", "_")}'
-                    nested_files = self.check_inside_folder(files_path=file_to_convert_path)
-                    for nested_file in nested_files:
-                        self.create_folder_batch(this_folder=file_name_and_path)
-                        look_name = file_name_and_path.rfind("/")
-                        fancy_name = file_name_and_path[look_name + 1:]
-                        find_file_name = nested_file.rfind("/")
-                        find_entire_name = nested_file[:find_file_name].rfind("/")
-                        entire_file_name = nested_file[find_entire_name + 1:].replace("/", "-")
-                        file_name_complete = f'{file_name_and_path}/{entire_file_name}_{fancy_name}'
-                        file_reference = {'parent': 'Enemies', 'path': nested_file, 'path_export': file_name_complete}
-                        files_to_convert.append(file_reference)
-                
-                elif "Menu_Misc" in selection:
-                    look_for_end = get_file.find("[")
-                    get_file_split = get_file[:look_for_end]
-                    file_to_convert_path = sc_folder_def + add_this_path + f'/{get_file_split}'
-                    file_name_and_path = dump_folder + f'/{selection}' + f'/{files_from_parent.replace(" ", "_")}'
-                    if '6665' in get_file_split:
-                        self.create_folder_batch(this_folder=file_name_and_path)
-                        file_name_complete = file_name_and_path + f'/6665_Menu'
-                        file_reference = {'parent': 'Menu_Misc', 'path': file_to_convert_path, 'path_export': file_name_complete}
-                        files_to_convert.append(file_reference)
-                    elif '6666' in get_file_split:
-                        self.create_folder_batch(this_folder=file_name_and_path)
-                        file_name_complete = file_name_and_path + f'/6666_Save_Icons'
-                        file_reference = {'parent': 'Menu_Misc', 'path': file_to_convert_path, 'path_export': file_name_complete}
-                        files_to_convert.append(file_reference)
-                    else:
-                        if 'Single-File' in get_file:
-                            look_for_end = get_file.find("[")
-                            get_file = get_file[:look_for_end]
-                            file_to_convert_path = sc_folder_def + add_this_path + f'/{get_file}'
-                            file_name_and_path = dump_folder + f'/{selection}' + f'/{files_from_parent.replace(" ", "_")}'
-                            self.create_folder_batch(this_folder=file_name_and_path)
-                            file_name_complete = file_name_and_path + f'/{get_file}_{selection}'
-                            file_reference = {'parent': 'Menu_Misc', 'path': file_to_convert_path, 'path_export': file_name_complete}
-                            files_to_convert.append(file_reference)
-                        else: # When [FOLDER]
-                            look_for_end = get_file.find("[")
-                            get_file = get_file[:look_for_end]
-                            file_to_convert_path = sc_folder_def + add_this_path + f'/{get_file}'
-                            file_name_and_path = dump_folder + f'/{selection}' + f'/{files_from_parent.replace(" ", "_")}'
-                            nested_files = self.check_inside_folder(files_path=file_to_convert_path)
-                            for nested_file in nested_files:
-                                self.create_folder_batch(this_folder=file_name_and_path)
-                                look_name = file_name_and_path.rfind("/")
-                                fancy_name = file_name_and_path[look_name + 1:]
-                                find_file_name = nested_file.rfind("/")
-                                find_entire_name = nested_file[:find_file_name].rfind("/")
-                                entire_file_name = nested_file[find_entire_name + 1:].replace("/", "-")
-                                file_name_complete = f'{file_name_and_path}/{entire_file_name}_{fancy_name}'
-                                file_reference = {'parent': 'Menu_Misc', 'path': nested_file, 'path_export': file_name_complete}
-                                files_to_convert.append(file_reference)
-                
-                elif "Skyboxes" in selection:
-                    look_for_end = get_file.find("[")
-                    get_file = get_file[:look_for_end]
-                    file_to_convert_path = sc_folder_def + add_this_path + f'/{get_file}'
-                    file_name_and_path = dump_folder + f'/{selection}' + f'/{files_from_parent.replace(" ", "_")}'
-                    get_file_changed = get_file.replace("/", "-")
-                    complete_path = file_name_and_path + f'/{get_file_changed}_{files_from_parent.replace(" ", "_")}_MCQ.png'
-                    self.create_folder_batch(this_folder=file_name_and_path)
-                    file_reference = {'parent': 'Skyboxes', 'path': file_to_convert_path, 'path_export': complete_path}
-                    files_to_convert.append(file_reference)
-                
-                elif "THE_END" in selection:
-                    look_for_end = get_file.find("[")
-                    get_file = get_file[:look_for_end]
-                    file_to_convert_path = sc_folder_def + add_this_path + f'/{get_file}'
-                    file_name_and_path = dump_folder + f'/{selection}'
-                    self.create_folder_batch(this_folder=file_name_and_path)
-                    complete_file_name = file_name_and_path + f'/THE_END-{get_file}'
-                    file_reference = {'parent': 'THE_END', 'path': file_to_convert_path, 'path_export': complete_file_name}
-                    files_to_convert.append(file_reference)
-                
-                elif "Tutorial" in selection:
-                    look_for_end = get_file.find("[")
-                    get_file = get_file[:look_for_end]
-                    file_to_convert_path = sc_folder_def + add_this_path + f'/{get_file}'
-                    file_name_and_path = dump_folder + f'/{selection}' + f'/{files_from_parent.replace(" ", "_")}'
-                    nested_files = self.check_inside_folder(files_path=file_to_convert_path)
-                    for nested_file in nested_files:
-                        self.create_folder_batch(this_folder=file_name_and_path)
-                        look_name = file_name_and_path.rfind("/")
-                        fancy_name = file_name_and_path[look_name + 1:]
-                        find_file_name = nested_file.rfind("/")
-                        find_entire_name = nested_file[:find_file_name].rfind("/")
-                        entire_file_name = nested_file[find_entire_name + 1:].replace("/", "-")
-                        file_name_complete = f'{file_name_and_path}/{entire_file_name}_{fancy_name}'
-                        file_reference = {'parent': 'Tutorial', 'path': nested_file, 'path_export': file_name_complete}
-                        files_to_convert.append(file_reference)
-                
-                elif "World_Map_Field" in selection:
-                    look_for_end = get_file.find("[")
-                    get_file = get_file[:look_for_end]
-                    file_to_convert_path = sc_folder_def + add_this_path + f'/{get_file}'
-                    file_name_and_path = dump_folder + f'/{selection}' + f'/{files_from_parent.replace(" ", "_")}'
-                    nested_files = self.check_inside_folder(files_path=file_to_convert_path)
-                    for nested_file in nested_files:
-                        self.create_folder_batch(this_folder=file_name_and_path)
-                        look_name = file_name_and_path.rfind("/")
-                        fancy_name = file_name_and_path[look_name + 1:]
-                        find_file_name = nested_file.rfind("/")
-                        find_entire_name = nested_file[:find_file_name].rfind("/")
-                        entire_file_name = nested_file[find_entire_name + 1:].replace("/", "-")
-                        file_name_complete = f'{file_name_and_path}/{entire_file_name}_{fancy_name}'
-                        file_reference = {'parent': 'World_Map_Field', 'path': nested_file, 'path_export': file_name_complete}
-                        files_to_convert.append(file_reference)
-                
-                elif "World_Map_Thumbnails" in selection:
-                    look_for_end = get_file.find("[")
-                    get_file = get_file[:look_for_end]
-                    file_to_convert_path = sc_folder_def + add_this_path + f'/{get_file}'
-                    file_name_and_path = dump_folder + f'/{selection}' + f'/{files_from_parent.replace(" ", "_")}'
-                    self.create_folder_batch(this_folder=file_name_and_path)
-                    complete_file_name = file_name_and_path + f'/{get_file}_{files_from_parent}'
-                    file_reference = {'parent': 'World_Map_Field', 'path': file_to_convert_path, 'path_export': complete_file_name}
-                    files_to_convert.append(file_reference)
+                if in_disk_type == 'Single-File':
+                    get_file_type = this_files_data.get('formatType')
+                    get_file_path = this_files_data.get(f'filePath')
+                    get_fantasy_name = this_files_data.get(f'fantasyName')
+                    get_flag = this_files_data.get(f'flag')
+                    fantasy_name_change_underscore = get_fantasy_name.replace(' ', '_')
+                    final_path_origin_file = f'{sc_folder_def}\\{get_file_path[0]}'
+                    final_path_to_dump = f'{dump_folder}\\{selection}\\{fantasy_name_change_underscore}'
+                    this_conversion = {'filePath': final_path_origin_file, 'filePathDump': final_path_to_dump, 'formatType': get_file_type, 'flag': get_flag}
+                    files_to_convert.append(this_conversion)
+
+                elif in_disk_type == 'FOLDER':
+                    get_nested_files = this_files_data.get('filePath')
+                    get_file_type = this_files_data.get('formatType')
+                    get_file_path = this_files_data.get(f'filePath')
+                    get_fantasy_name = this_files_data.get(f'fantasyName')
+                    get_flag = this_files_data.get(f'flag')
+                    number_add_nested = 0
+                    for this_texture_path in get_nested_files:
+                        final_path_origin_file = f'{sc_folder_def}\\{this_texture_path}'
+                        fantasy_name_change_underscore = get_fantasy_name.replace(' ', '_')
+                        final_path_to_dump = f'{dump_folder}\\{fantasy_name_change_underscore}\\{number_add_nested}'
+                        this_conversion = {'filePath': final_path_origin_file, 'filePathDump': final_path_to_dump, 'formatType': get_file_type, 'flag': get_flag}
+                        files_to_convert.append(this_conversion)
+                        number_add_nested += 1
 
         get_total_files = len(files_to_convert)
         current_file_converted = 0
         for current_file_convert in files_to_convert:
             self.conversion_window_box.update()
-            file_parent = current_file_convert.get("parent")
-            file_look_path = current_file_convert.get("path")
-            file_path_export = current_file_convert.get("path_export")
-            if "Battle_Stages" in file_parent:
-                texture_converted = rt_preview.PreviewTexture.texture_file_decoded(rt_preview.PreviewTexture, file_look_path, text_type='TIM: 4-Bit CLUT', sp_flag=0, texture_number=None)
-                number_of_cluts = len(texture_converted)
-                for clut in range(0, number_of_cluts):
-                    complete_path = file_path_export + f'_TIM_{clut}.png'
-                    img = Image.open(io.BytesIO(texture_converted[clut]))
-                    img.save(complete_path)
+            file_origin= current_file_convert.get('filePath')
+            file_path_export = current_file_convert.get('filePathDump')
+            file_format_type = current_file_convert.get('formatType')
+            file_flag = current_file_convert.get('flag')
             
-            elif "Bosses" in file_parent:
-                texture_converted = rt_preview.PreviewTexture.texture_file_decoded(rt_preview.PreviewTexture, file_look_path, text_type='TIM: 4-Bit CLUT', sp_flag=0, texture_number=None)
-                number_of_cluts = len(texture_converted)
-                for clut in range(0, number_of_cluts):
-                    complete_path = file_path_export + f'_TIM_{clut}.png'
-                    img = Image.open(io.BytesIO(texture_converted[clut]))
-                    img.save(complete_path)
-            
-            elif "Characters" in file_parent:
-                texture_converted = rt_preview.PreviewTexture.texture_file_decoded(rt_preview.PreviewTexture, file_look_path, text_type='TIM: 4-Bit CLUT', sp_flag=0, texture_number=None)
-                number_of_cluts = len(texture_converted)
-                find_file_name = file_path_export.rfind("/")
-                file_name_dump = file_path_export[find_file_name:]
-                for clut in range(0, number_of_cluts):
-                    complete_path = file_path_export + f'{file_name_dump}_TIM_{clut}.png'
-                    img = Image.open(io.BytesIO(texture_converted[clut]))
-                    img.save(complete_path)
-            
-            elif "CutScenes" in file_parent:
-                texture_converted = rt_preview.PreviewTexture.texture_file_decoded(rt_preview.PreviewTexture, file_look_path, text_type='TIM: 4-Bit CLUT', sp_flag=0, texture_number=None)
-                number_of_cluts = len(texture_converted)
-                find_file_name = file_path_export.rfind("/")
-                file_name_dump = file_path_export[find_file_name:]
-                for clut in range(0, number_of_cluts):
-                    complete_path = file_path_export + f'/{file_name_dump}_TIM_{clut}.png'
-                    img = Image.open(io.BytesIO(texture_converted[clut]))
-                    img.save(complete_path)
-            
-            elif "Enemies" in file_parent:
-                texture_converted = rt_preview.PreviewTexture.texture_file_decoded(rt_preview.PreviewTexture, file_look_path, text_type='TIM: 4-Bit CLUT', sp_flag=0, texture_number=None)
-                number_of_cluts = len(texture_converted)
-                for clut in range(0, number_of_cluts):
-                    complete_path = file_path_export + f'_TIM_{clut}.png'
-                    img = Image.open(io.BytesIO(texture_converted[clut]))
-                    img.save(complete_path)
-            
-            elif "Menu_Misc" in file_parent:
-                if '6665' in file_look_path:
-                    for number_file in range(0, 3):
-                        texture_converted = rt_preview.PreviewTexture.texture_file_decoded(rt_preview.PreviewTexture, file_look_path, text_type='TIM: 4-Bit CLUT', sp_flag=2, texture_number=number_file)
-                        number_of_cluts = len(texture_converted)
-                        for clut in range(0, number_of_cluts):
-                            complete_path = file_path_export + f'{number_file}_TIM_{clut}.png'
-                            img = Image.open(io.BytesIO(texture_converted[clut]))
-                            img.save(complete_path)
-                elif '6666' in file_look_path:
-                    texture_converted = rt_preview.PreviewTexture.texture_file_decoded(rt_preview.PreviewTexture, file_look_path, text_type='TIM: 4-Bit CLUT', sp_flag=1, texture_number=None)
-                    number_of_cluts = len(texture_converted)
-                    for clut in range(0, number_of_cluts):
-                        complete_path = file_path_export + f'_TIM_{clut}.png'
-                        img = Image.open(io.BytesIO(texture_converted[clut]))
-                        img.save(complete_path)
-                else:
-                    texture_converted = rt_preview.PreviewTexture.texture_file_decoded(rt_preview.PreviewTexture, file_look_path, text_type='TIM: 4-Bit CLUT', sp_flag=0, texture_number=None)
-                    number_of_cluts = len(texture_converted)
-                    for clut in range(0, number_of_cluts):
-                        complete_path = file_path_export + f'_TIM_{clut}.png'
-                        img = Image.open(io.BytesIO(texture_converted[clut]))
-                        img.save(complete_path)
-            
-            elif "Skyboxes" in file_parent:
-                texture_converted = rt_preview.PreviewTexture.texture_file_decoded(rt_preview.PreviewTexture, file_look_path, text_type='MCQ', sp_flag=0, texture_number=None)
-                img = Image.open(io.BytesIO(texture_converted))
-                img.save(file_path_export)
-            
-            elif "THE_END" in file_parent:
-                texture_converted = rt_preview.PreviewTexture.texture_file_decoded(rt_preview.PreviewTexture, file_look_path, text_type='TIM: 4-Bit CLUT', sp_flag=0, texture_number=None)
-                number_of_cluts = len(texture_converted)
-                for clut in range(0, number_of_cluts):
-                    complete_path = file_path_export + f'_TIM_{clut}.png'
-                    img = Image.open(io.BytesIO(texture_converted[clut]))
-                    img.save(complete_path)
-            
-            elif "Tutorial" in file_parent:
-                texture_converted = rt_preview.PreviewTexture.texture_file_decoded(rt_preview.PreviewTexture, file_look_path, text_type='TIM: 4-Bit CLUT', sp_flag=0, texture_number=None)
-                number_of_cluts = len(texture_converted)
-                for clut in range(0, number_of_cluts):
-                    complete_path = file_path_export + f'_TIM_{clut}.png'
-                    img = Image.open(io.BytesIO(texture_converted[clut]))
-                    img.save(complete_path)
-            
-            elif "World_Map_Field" in file_parent:
-                texture_converted = rt_preview.PreviewTexture.texture_file_decoded(rt_preview.PreviewTexture, file_look_path, text_type='TIM: 4-Bit CLUT', sp_flag=0, texture_number=None)
-                number_of_cluts = len(texture_converted)
-                for clut in range(0, number_of_cluts):
-                    complete_path = file_path_export + f'_TIM_{clut}.png'
-                    img = Image.open(io.BytesIO(texture_converted[clut]))
-                    img.save(complete_path)
-            
-            elif "World_Map_Thumbnails" in file_parent:
-                texture_converted = rt_preview.PreviewTexture.texture_file_decoded(rt_preview.PreviewTexture, file_look_path, text_type='TIM: 8-Bit CLUT', sp_flag=0, texture_number=None)
-                number_of_cluts = len(texture_converted)
-                find_file_name = file_path_export.rfind("/")
-                file_name_dump = file_path_export[find_file_name:]
-                for clut in range(0, number_of_cluts):
-                    complete_path = file_path_export + f'{file_name_dump}_TIM_{clut}.png'
-                    img = Image.open(io.BytesIO(texture_converted[clut]))
-                    img.save(complete_path)
+            try:
+                os.makedirs(file_path_export, exist_ok=True)
+            except OSError:
+                error_folder_tim_00 = f'Can\'t create TIM Export folder, permission denied'
+                error_folder_window = messagebox.showerror(title='System Error...', message=error_folder_tim_00)
+                print(error_folder_tim_00)
+                exit()
 
+            texture_object = PngTexture(texture_path=file_origin, texture_type=file_format_type, flag=file_flag)
+            texture_converted_rgba = texture_object.png_texture.get(f'RGBA_Data')
+            #texture_converted_size = texture_object.png_texture.get(f'SizeImg')
+            number_of_cluts = len(texture_converted_rgba)
+            prepare_texture_convert = TexturePreview(texture_png=texture_object.png_texture)
+            texture_converted = prepare_texture_convert.texture_for_preview
+            subname_file_find = file_path_export.rfind('\\')
+            subname_file = file_path_export[subname_file_find + 1:]
+            for clut in range(0, number_of_cluts):
+                complete_path = f'{file_path_export}\\{subname_file}_TIM_{clut}.png'
+                img = Image.open(io.BytesIO(texture_converted.get(f'IMAGE_{clut}')))
+                img.save(complete_path)
             self.label_converting_files.configure(text=f'Conversion in progress...\nCurrent File {current_file_converted + 1} of {get_total_files}')
             current_file_converted += 1
+        
         self.label_converting_files.configure(text=f'Conversion in progress...\nCurrent File {current_file_converted} of {get_total_files}')
         if current_file_converted == get_total_files:
             self.conversion_window_box.after(1000, func=lambda: self.destroy_window_conversion())

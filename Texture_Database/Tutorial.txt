@@ -1,6 +1,0 @@
-3005[FOLDER]: Master Tasman
-3006[FOLDER]: Merchant
-3007[FOLDER]: Rose Dragoon
-3075[FOLDER]: Master Tasman - Copy
-3076[FOLDER]: Merchant - Copy
-3077[FOLDER]: Rose Dragoon - Copy

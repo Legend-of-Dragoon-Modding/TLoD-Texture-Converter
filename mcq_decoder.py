@@ -34,27 +34,27 @@ TheFlyingZamboni => https://github.com/theflyingzamboni
 
 """
 from tkinter import messagebox
-import preview_textures
 
 MCQ_MAGIC_1 = b'\x4D\x43\x51\x01'
 MCQ_MAGIC_2 = b'\x4D\x43\x51\x02'
 
-class McqDecoder:
-    def __init__(self, file_to_decode=str, ispreview=str):
-        self.self = McqDecoder
-        self.file_to_decode = file_to_decode
-        self.is_preview = ispreview
-        self.decode_mcq_data(file_path=self.file_to_decode)
+class McqPng:
+    def __init__(self, file_to_decode=str):
+        self.file_to_decode: str = file_to_decode
+        self.mcq_decoded: dict = {}
+        self.decode_mcq_data()
     
-    def decode_mcq_data(self, file_path=str, ispreview=str) -> bytes:
-        image_data = b''
+    def decode_mcq_data(self) -> None:
+        mcq_to_png: dict = {}
+        image_data: dict = {}
         image_properties = {'CLUT_WIDTH': 0, 'X': 0, 'Y': 0}
-        with open(file_path, 'rb') as mcq_binary_data:
+        
+        with open(self.file_to_decode, 'rb') as mcq_binary_data:
             read_mcq = mcq_binary_data.read()
             read_mcq_magic = read_mcq[0:4]
 
             if (read_mcq_magic != MCQ_MAGIC_1) and (read_mcq_magic != MCQ_MAGIC_2):
-                error_msg_00 = f'Critical!!: {file_path} is not a MCQ TLoD File!'
+                error_msg_00 = f'Critical!!: {self.file_to_decode} is not a MCQ TLoD File!'
                 error_folder_window = messagebox.showerror(title='System Error...', message=error_msg_00)
                 raise TypeError(error_msg_00)
             
@@ -67,12 +67,16 @@ class McqDecoder:
             image_properties['X'] = image_width
             image_properties['Y'] = image_height
             image_properties['CLUT_WIDTH'] = int.from_bytes(read_mcq[16:18], 'little', signed=False)
+            mcq_binary_data.close()
+            
         decoded_mcq_data, w_int, h_int, aw, ah = self.split_data_image(mcq_binary=image_data, img_prop=image_properties)
-        png_file = self.processed_mcq(rgba_data=decoded_mcq_data, w=w_int, h=h_int, align_width=aw, align_height=ah, image_output_type=ispreview)
-        return png_file
+        mcq_final_size = {'X': w_int, 'Y': h_int}
+        align_data = {'AX': aw, 'AY': ah}
+        mcq_one_clut = {f'IMAGE_0': decoded_mcq_data}
+        mcq_to_png = {'SizeImg': mcq_final_size, 'RGBA_Data': mcq_one_clut, 'alignData': align_data, 'textureType': 'MCQ'}
+        self.mcq_decoded = mcq_to_png
     
-    @classmethod
-    def split_data_image(cls, mcq_binary=bytes, img_prop=dict):
+    def split_data_image(self, mcq_binary=bytes, img_prop=dict):
         image_width = img_prop.get(f'X')
         image_height = img_prop.get(f'Y')
         clut_width = img_prop.get('CLUT_WIDTH')
@@ -151,9 +155,3 @@ class McqDecoder:
         final_rgba = b''.join(rgba_data)
 
         return final_rgba, image_width, image_height, align_width, align_height
-    
-    @classmethod
-    def processed_mcq(cls, rgba_data=bytes, w=int, h=int, align_width=int, align_height=int, image_output_type=str):
-        if image_output_type == f'preview':
-            img_byte_arr = preview_textures.PreviewTexture.preview_texture(texture_type='MCQ', rgba_data=rgba_data, size_w=w, size_h=h, align_w=align_width, align_h=align_height)
-            return img_byte_arr

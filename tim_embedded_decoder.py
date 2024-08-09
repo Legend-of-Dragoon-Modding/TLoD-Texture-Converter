@@ -107,7 +107,6 @@ class TimEmbeddedDecoder:
     @staticmethod
     def split_clut(clut_data=bytes, type_clut=str) -> dict:
         split_clut = {}
-        #clut_header = clut_data[0:12] # can i ignore this?
         clut_data_itself = clut_data[12:]
         
         if type_clut == f'4-bit CLUT':
